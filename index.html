@@ -448,23 +448,30 @@ Build an animated, narrated bedtime storybook as ONE self-contained HTML file (H
 - Build it in one pass, check the JS syntax, and keep the final reply short: what you built, any assumptions, how to record.
 
 2. VISUAL STYLE
-- Follow the visual direction in PART 2. When a reference image is attached, use it as the primary guide for the palette and character design.
-- Draw characters as layered SVG groups with their origin at the feet. Give each open and closed eyes, a mouth or expression, and poses switched by CSS classes (sit, lie, walk, up, yawn, closed, shake, fly).
-- Support both light and dark page themes outside the stage.
+- Follow the visual direction in PART 2. When a reference image is attached, use it as the primary guide for the palette, proportions, line quality and character design. Keep the palette cohesive: a few dominant hues, one accent colour, and a clear difference between warm light and cool shadow.
+- Draw characters as layered SVG groups (body, limbs, head, ears or wings, tail, face) with their origin at the feet, so scaling and positioning stay grounded. Give each open and closed eyes, a mouth or expression, and poses switched by CSS classes (sit, lie, walk, up, yawn, closed, shake, fly). Use rounded, simple, readable shapes with a strong silhouette.
+- Build depth with layered scenery: sky, far background, midground, foreground, and a soft ground shadow (a flattened radial-gradient ellipse) under every character. Use gradients for form: a lighter top edge for rim light, a darker lower edge for volume, and a soft glow behind lanterns, the moon and fires, built from semi-transparent radial gradients.
+- Keep the picture clear: one focal point per scene, good contrast between character and background, a consistent light direction, and enough empty space for the caption.
+- Support both light and dark page themes outside the stage, using CSS variables for all page colours.
 - Anti-flicker rules, so screen recording is smooth:
   - No SVG filters (feTurbulence, displacement, drop-shadow), no mix-blend-mode, no backdrop-filter, and no masks on animated content.
-  - Use plain gradients, opacity and transform only.
+  - Use plain gradients, opacity and transform only. Never animate width, height, top, left, blur or box-shadow.
   - Make the torn-paper edge with a static clipPath.
-  - Keep animated elements to about 150 or fewer.
+  - Keep animated elements to about 150 or fewer. Make decorative elements static, and group many small particles into a few animated layers.
+  - Promote only moving layers with will-change: transform, and use transform-box: fill-box with a set transform-origin for every rotating part.
 
 3. ANIMATION METHOD
 - Store the story as an array of scenes. Each scene has lines [[speaker, text]], an inherited state (character positions, scale, pose, props) and optional per-scene extras: bubble emoji, fx, camera, dawn/time-of-day and end.
-- The engine rebuilds state by replaying scenes up to the current index, so next and previous work.
-- Move characters by CSS transitions on translate and scale, with fade in and out. Add walk bob, head shake, wing flap, breathing, yawn and eye blink where the story needs them.
-- Camera: a slow zoom or pan per scene (about 10s ease-in-out).
-- Ambient motion suited to the setting: twinkling stars, drifting swirls or clouds, fireflies, chimney smoke, swaying trees, moving grass.
-- Per-scene effects as the story needs: thought and dream bubbles with emoji, wind, floating notes, Z's, sparkles, rain, snow and so on.
-- Each scene lasts as long as its narration audio plus a 1s pause. The caption shows the line being spoken, with character dialogue in a different colour from the narrator.
+- The engine rebuilds state by replaying scenes up to the current index, so next and previous work. Keep the engine deterministic: the same scene index always gives the same frame.
+- Move characters by CSS transitions on translate and scale, with fade in and out. Use natural easing (ease-in-out for travel, ease-out for arrivals, a slight overshoot for playful moments) and never linear motion except for continuous loops.
+- Apply the principles of animation: anticipation before a move (a small crouch before a jump), squash and stretch on landings, follow-through on ears, tails and wings, overlapping action so body parts do not start and stop together, and secondary motion for small details.
+- Add walk bob, head shake, wing flap, breathing, yawn and eye blink where the story needs them. Randomise blink intervals and offset each character's idle loop so nothing moves in sync.
+- Camera: a slow zoom or pan per scene (about 10s ease-in-out), applied to one wrapper element. Use parallax by moving far layers less than near layers, and have the camera ease toward the focal point of each scene.
+- Ambient motion suited to the setting: twinkling stars, drifting swirls or clouds, fireflies, chimney smoke, swaying trees, moving grass. Use long, slow, looping transform and opacity animations with different durations so the loops never visibly repeat together.
+- Per-scene effects as the story needs: thought and dream bubbles with emoji, wind, floating notes, Z's, sparkles, rain, snow and so on. Make effects support the mood of the scene and keep them subtle so they never cover the characters or the caption.
+- Make scene changes smooth: crossfade or slide between scenes, and carry ambient motion across so the world never freezes between scenes.
+- Each scene lasts as long as its narration audio plus a 1s pause. The caption shows the line being spoken, with character dialogue in a different colour from the narrator, in a large readable font with good contrast and a soft backing panel.
+- Make the output recording-friendly: expose a seek(time) function that sets the time of all CSS and Web Animations (document.getAnimations()), so frames can be captured at an exact, steady frame rate. This avoids dropped frames and keeps the WebP-to-MP4 conversion in sync with the audio.
 
 4. NARRATION (pre-rendered, never browser speechSynthesis)
 - Browser speech cannot be captured in a recording, so render the narration offline in the sandbox:
