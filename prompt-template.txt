@@ -1,0 +1,78 @@
+==================== PART 1: STORY ANIMATION METHOD (keep unchanged) ====================
+
+Build an animated, narrated bedtime storybook as ONE self-contained HTML file (HTML + CSS + JS + inline SVG), using the story and settings in PART 2. If I attach a previous storybook HTML file, reuse its engine and replace only the characters, scenes, narration audio and music.
+
+1. FORMAT AND DELIVERY
+- Format comes from PART 2. Default is 9:16 vertical (1080x1920) for Facebook Reels. The alternative is 16:9.
+- Use an SVG stage whose viewBox matches the format. A wrapper element #rec holds the stage plus the caption and is locked to the format's aspect ratio, centred and scaled to fit the window.
+- For 9:16, keep important action and captions away from the top 10% and bottom 20% of the frame, where Reels UI covers them.
+- Only external resource allowed: Google Fonts (Patrick Hand). Everything else is inline.
+- Publish it as an artifact AND present the .html file for download. Video recording only works from the downloaded copy opened in Chrome or Edge.
+- Build it in one pass, check the JS syntax, and keep the final reply short: what you built, any assumptions, how to record.
+
+2. VISUAL STYLE
+- Copy the attached reference image: soft children's-book watercolor, thin ink outlines, textured paper feel, glowing details such as fireflies, lit windows and stars, and the same colour palette and character design.
+- Draw characters as layered SVG groups with their origin at the feet. Give each open and closed eyes, a mouth or expression, and poses switched by CSS classes (sit, lie, walk, up, yawn, closed, shake, fly).
+- Support both light and dark page themes outside the stage.
+- Anti-flicker rules, so screen recording is smooth:
+  - No SVG filters (feTurbulence, displacement, drop-shadow), no mix-blend-mode, no backdrop-filter, and no masks on animated content.
+  - Use plain gradients, opacity and transform only.
+  - Make the torn-paper edge with a static clipPath.
+  - Keep animated elements to about 150 or fewer.
+
+3. ANIMATION METHOD
+- Store the story as an array of scenes. Each scene has lines [[speaker, text]], an inherited state (character positions, scale, pose, props) and optional per-scene extras: bubble emoji, fx, camera, dawn/time-of-day and end.
+- The engine rebuilds state by replaying scenes up to the current index, so next and previous work.
+- Move characters by CSS transitions on translate and scale, with fade in and out. Add walk bob, head shake, wing flap, breathing, yawn and eye blink where the story needs them.
+- Camera: a slow zoom or pan per scene (about 10s ease-in-out).
+- Ambient motion suited to the setting: twinkling stars, drifting swirls or clouds, fireflies, chimney smoke, swaying trees, moving grass.
+- Per-scene effects as the story needs: thought and dream bubbles with emoji, wind, floating notes, Z's, sparkles, rain, snow and so on.
+- Each scene lasts as long as its narration audio plus a 1s pause. The caption shows the line being spoken, with character dialogue in a different colour from the narrator.
+
+4. NARRATION (pre-rendered, never browser speechSynthesis)
+- Browser speech cannot be captured in a recording, so render the narration offline in the sandbox:
+  - pip install kokoro-onnx soundfile imageio-ffmpeg
+  - Download kokoro-v1.0.int8.onnx and voices-v1.0.bin from the GitHub release "model-files-v1.0" of thewh1teagle/kokoro-onnx.
+  - Generate one mono 56k mp3 per line and embed them as base64 in an AUD array, played through WebAudio.
+- Default narrator: af_heart at speed 0.88 (warm, slow, bedtime). Give each character a distinct voice and speed 0.82-0.95 to suit their personality (for example am_puck, af_sky, bm_fable, bm_george). Voices come from PART 2.
+- Rewrite sound-effect words for the TTS, for example "Whooosh..." and "Chirp...".
+- If the TTS cannot be installed, tell me. Do not silently fall back to browser speech.
+
+5. MUSIC AND SOUND (generated live with Web Audio, no audio files, composed to fit THIS story)
+- Instrument base: a music-box sound (sine plus a soft octave overtone, about 1.6s decay) over triangle-wave pad chords, with a feedback-delay echo. Keep music gain around 0.3 so narration stays clear. Change the instrument if PART 2 asks (harp pluck, bells, flute-like, marimba and so on).
+- Compose for the story. Choose mood, key and scale, tempo (step 0.45-0.7s), a 32-step melody string, a 4-chord progression and any extra layers.
+  - Examples: pentatonic major for calm, bright major for happy, gentle modal minor for mystery.
+- The music may shift between scene groups, for example calm, then adventure, then calm, then a lullaby ending. Fade the music out gently at the end.
+- Synthesize the sound effects with oscillators and filtered noise (wind, crickets, rain, owl hoot, footsteps, splashes, magic chimes and so on), triggered by each scene's fx.
+
+6. CONTROLS
+- Start screen with the title and a "Begin the story" button (needed so audio can play).
+- Controls: previous, play/pause, next, music toggle, voice toggle, Record video.
+- End card with "The End" and "Read again".
+
+7. VIDEO EXPORT
+- The Record button:
+  - Calls getDisplayMedia with preferCurrentTab and video only.
+  - Crops to #rec with CropTarget.cropTo.
+  - Takes the audio track from a MediaStreamDestination that carries the page's own mix of narration, music and sound effects.
+  - Records with MediaRecorder as webm (vp9/opus, about 6 Mbps) and hides the controls while recording.
+  - Starts the story after 1.5s, stops 2.5s after the last scene, and downloads the .webm automatically.
+- No fullscreen switching, because it causes flicker.
+- Include the ffmpeg command to convert to MP4: ffmpeg -i story.webm -c:v libx264 -c:a aac story.mp4
+
+==================== PART 2: STORY (fill in each time) ====================
+
+Title: <<Name>>
+Format: 9:16 Facebook Reel (1080x1920)  |  or 16:9
+Target length: max 3 min
+Reference image: (attached)
+
+Mood and music direction : safe and happy feeling
+Sound effects wanted:
+
+Narrator voice: warm female (default) 
+Story text:
+"""
+
+"""
+
