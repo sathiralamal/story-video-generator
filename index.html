@@ -460,7 +460,16 @@ Build an animated, narrated bedtime storybook as ONE self-contained HTML file (H
   - Keep animated elements to about 150 or fewer. Make decorative elements static, and group many small particles into a few animated layers.
   - Promote only moving layers with will-change: transform, and use transform-box: fill-box with a set transform-origin for every rotating part.
 
-3. ANIMATION METHOD
+3. COLOR PALETTE AND DECORATION
+-  COLOR PALETTE : berry pink #ff4d6d, orange #ff9f1c, sunshine yellow #ffd60a, meadow green #2ec27e, sky cyan #00b4d8, grape purple #8e44ff, bubblegum #ff7aa2, white #ffffff. Sky gradient from #35b6ff (top) through #8fa8ff to #d79bff (bottom), soft cream sun glow #fff7b0, rolling green hills #3ddc84 and #2ec27e at the bottom.
+-  DECORATION: fluffy white clouds, rainbow arc, chunky yellow and pink stars, white sparkles, colorful music notes, balloons, simple flowers on the hills.
+-  Keep backgrounds bright and sunny.
+-  Use warm, happy expressions on every character.
+- Don't add realistic shading, textures.
+- Font: Poppins Bold (700). Any round, heavy sans such as Fredoka or Baloo is an acceptable substitute.
+- Tagline and body text: Poppins Bold, color #5a2a8c.
+
+4. ANIMATION METHOD
 - Store the story as an array of scenes. Each scene has lines [[speaker, text]], an inherited state (character positions, scale, pose, props) and optional per-scene extras: bubble emoji, fx, camera, dawn/time-of-day and end.
 - The engine rebuilds state by replaying scenes up to the current index, so next and previous work. Keep the engine deterministic: the same scene index always gives the same frame.
 - Move characters by CSS transitions on translate and scale, with fade in and out. Use natural easing (ease-in-out for travel, ease-out for arrivals, a slight overshoot for playful moments) and never linear motion except for continuous loops.
@@ -473,7 +482,7 @@ Build an animated, narrated bedtime storybook as ONE self-contained HTML file (H
 - Each scene lasts as long as its narration audio plus a 1s pause. The caption shows the line being spoken, with character dialogue in a different colour from the narrator, in a large readable font with good contrast and a soft backing panel.
 - Make the output recording-friendly: expose a seek(time) function that sets the time of all CSS and Web Animations (document.getAnimations()), so frames can be captured at an exact, steady frame rate. This avoids dropped frames and keeps the WebP-to-MP4 conversion in sync with the audio.
 
-4. NARRATION (pre-rendered, never browser speechSynthesis)
+5. NARRATION (pre-rendered, never browser speechSynthesis)
 - Browser speech cannot be captured in a recording, so render the narration offline in the sandbox:
   - pip install kokoro-onnx soundfile imageio-ffmpeg
   - Download kokoro-v1.0.int8.onnx and voices-v1.0.bin from the GitHub release "model-files-v1.0" of thewh1teagle/kokoro-onnx.
@@ -482,19 +491,19 @@ Build an animated, narrated bedtime storybook as ONE self-contained HTML file (H
 - Rewrite sound-effect words for the TTS, for example "Whooosh..." and "Chirp...".
 - If the TTS cannot be installed, tell me. Do not silently fall back to browser speech.
 
-5. MUSIC AND SOUND (generated live with Web Audio, no audio files, composed to fit THIS story)
+6. MUSIC AND SOUND (generated live with Web Audio, no audio files, composed to fit THIS story)
 - Instrument base: <<INSTRUMENT>>, with a feedback-delay echo. Keep music gain around 0.3 so narration stays clear. Change the instrument if PART 2 asks (harp pluck, bells, flute-like, marimba and so on).
 - Compose for the story. Choose mood, key and scale, tempo (step 0.45-0.7s), a 32-step melody string, a 4-chord progression and any extra layers.
   - Examples: pentatonic major for calm, bright major for happy, gentle modal minor for mystery.
 - The music may shift between scene groups, for example calm, then adventure, then calm, then a lullaby ending. Fade the music out gently at the end.
 - Synthesize the sound effects with oscillators and filtered noise (wind, crickets, rain, owl hoot, footsteps, splashes, magic chimes and so on), triggered by each scene's fx.
 
-6. CONTROLS
+7. CONTROLS
 - Start screen with the title and a "Begin the story" button (needed so audio can play).
 - Controls: previous, play/pause, next, music toggle, voice toggle, Record video.
 - End card with "The End" and "Read again".
 
-7. VIDEO EXPORT
+8. VIDEO EXPORT
 - The Record button:
   - Calls getDisplayMedia with preferCurrentTab and video only.
   - Crops to #rec with CropTarget.cropTo.
