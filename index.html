@@ -219,10 +219,9 @@
 
     .preview-body { padding: 17px; }
 
-    #output {
+    #output, #claude-output {
       display: block;
       width: 100%;
-      min-height: 610px;
       padding: 16px;
       border: 1px solid #ecebe5;
       border-radius: 11px;
@@ -234,6 +233,9 @@
       resize: vertical;
       white-space: pre-wrap;
     }
+
+    #output { min-height: 610px; }
+    #claude-output { min-height: 420px; }
 
     .preview-footer {
       display: flex;
@@ -269,13 +271,14 @@
     .button.primary { background: var(--green); color: white; }
     .button.primary:hover { background: var(--green-hover); }
 
-    #status {
+    .copy-status {
       min-height: 18px;
       margin: 0 17px 12px;
       color: #486a47;
       font-size: 12px;
     }
-    #status.error { color: #a13c33; }
+    .copy-status.error { color: #a13c33; }
+    .claude-panel { margin-top: 22px; }
 
     @media (max-width: 820px) {
       .workspace { grid-template-columns: 1fr; }
@@ -291,7 +294,9 @@
       .field.full { grid-column: auto; }
       .preview-header { padding: 16px; }
       .preview-body { padding: 12px; }
-      #output { min-height: 400px; font-size: 10.5px; }
+      #output, #claude-output { font-size: 10.5px; }
+      #output { min-height: 400px; }
+      #claude-output { min-height: 360px; }
       .preview-footer { padding: 0 12px 12px; }
       .button { padding: 8px 11px; }
     }
@@ -430,6 +435,26 @@
         <p id="status" role="status" aria-live="polite"></p>
       </section>
     </div>
+
+    <section class="panel preview-panel claude-panel" aria-labelledby="claude-heading">
+      <div class="preview-header">
+        <div class="preview-title">
+          <span class="live-dot" aria-hidden="true"></span>
+          <h2 id="claude-heading">CLAUDE.md</h2>
+        </div>
+        <span class="step">Live preview · Copy into a file named CLAUDE.md</span>
+      </div>
+      <div class="preview-body">
+        <textarea id="claude-output" aria-label="Generated CLAUDE.md file" readonly spellcheck="false"></textarea>
+      </div>
+      <div class="preview-footer">
+        <span class="word-count">Updates with your story settings</span>
+        <div class="actions">
+          <button class="button primary" id="copy-claude" type="button">Copy CLAUDE.md</button>
+        </div>
+      </div>
+      <p class="copy-status" id="claude-status" role="status" aria-live="polite"></p>
+    </section>
   </main>
 
   <script>
@@ -608,6 +633,8 @@ Story text:
     const output = document.querySelector("#output");
     const status = document.querySelector("#status");
     const wordCount = document.querySelector("#word-count");
+    const claudeOutput = document.querySelector("#claude-output");
+    const claudeStatus = document.querySelector("#claude-status");
 
     const customFields = [
       ["format", "format-custom", "9:16 Facebook Reel (1080x1920)"],
@@ -642,10 +669,17 @@ Story text:
       const values = fieldValues();
       const prompt = STORYBOOK_TEMPLATE.replace(/<<(TITLE|FORMAT|LENGTH|MOOD|INSTRUMENT|VISUAL_STYLE|EFFECTS|VOICE|STORY)>>/g, (_, key) => values[key]);
       output.value = prompt;
+      claudeOutput.value = `# Storybook implementation brief
+
+Use this file as the complete task brief when creating the storybook. Follow the animation, implementation, and delivery requirements in Part 1, and use the exact story settings and text in Part 2. Treat this brief as the source of truth and do not omit its constraints.
+
+${prompt}`;
       const words = prompt.trim().split(/\s+/).filter(Boolean).length;
       wordCount.textContent = `${words.toLocaleString()} words`;
       status.textContent = "";
       status.classList.remove("error");
+      claudeStatus.textContent = "";
+      claudeStatus.classList.remove("error");
     }
 
     customFields.forEach(([selectId, inputId]) => {
@@ -668,17 +702,35 @@ Story text:
     form.addEventListener("input", renderPrompt);
     form.addEventListener("change", renderPrompt);
 
-    document.getElementById("copy").addEventListener("click", async () => {
+    async function copyPreview(textarea, statusElement, successMessage, fallbackMessage) {
       try {
-        await navigator.clipboard.writeText(output.value);
-        status.textContent = "Complete prompt copied to clipboard.";
-        status.classList.remove("error");
+        await navigator.clipboard.writeText(textarea.value);
+        statusElement.textContent = successMessage;
+        statusElement.classList.remove("error");
       } catch (error) {
-        output.focus();
-        output.select();
-        status.textContent = "Clipboard access was blocked. The prompt is selected—copy it with your keyboard.";
-        status.classList.add("error");
+        textarea.focus();
+        textarea.select();
+        statusElement.textContent = fallbackMessage;
+        statusElement.classList.add("error");
       }
+    }
+
+    document.getElementById("copy").addEventListener("click", () => {
+      copyPreview(
+        output,
+        status,
+        "Complete prompt copied to clipboard.",
+        "Clipboard access was blocked. The prompt is selected—copy it with your keyboard."
+      );
+    });
+
+    document.getElementById("copy-claude").addEventListener("click", () => {
+      copyPreview(
+        claudeOutput,
+        claudeStatus,
+        "CLAUDE.md copied to clipboard.",
+        "Clipboard access was blocked. CLAUDE.md is selected—copy it with your keyboard."
+      );
     });
 
     document.getElementById("reset").addEventListener("click", () => {
